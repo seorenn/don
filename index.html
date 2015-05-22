@@ -1,6 +1,7 @@
 <html>
   <head>
     <script type="text/javascript" src="http://seorenn.github.io/js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/cookie.js"></script>
     <script type="text/javascript" src="js/exchg.js"></script>
   </head>
   <body>
@@ -11,12 +12,21 @@
     </div>
 
     <script type="text/javascript">
+     // load cache from cookie
+     var cached_data = get_cookie('exchg');
+     if (cached_data != undefined) {
+       currencies_cache = JSON.parse(cached_data);
+     }
+
      var target_currency = currencies[0]['name'];
 
      var refresh_currency = function(index) {
        console.log('Refreshing currency with index ' + index);
        if (index >= currencies.length) {
          console.log('Index out of range. finishing...');
+         // save cache using cookie
+         var json_data = JSON.stringify(currencies_cache);
+         set_cookie('exchg', json_data, 60 * 60);
          return;
        }
        cur = currencies[index];

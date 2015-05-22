@@ -15,6 +15,7 @@ var currencies_cache = {};
 
 var exchg_yahoo = function(from, to, complete) {
   if (from in currencies_cache) {
+    console.log('Found ' + from + ' data from cookie. Skipping Request...');
     complete(currencies_cache[from]);
     return;
   }
