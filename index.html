@@ -4,6 +4,43 @@
     <script type="text/javascript" src="js/exchg.js"></script>
   </head>
   <body>
-    test
+    <div id="exchanges">
+    </div>
+
+    <div id="calculator">
+    </div>
+
+    <script type="text/javascript">
+     var target_currency = currencies[0]['name'];
+
+     var refresh_currency = function(index) {
+       console.log('Refreshing currency with index ' + index);
+       if (index >= currencies.length) {
+         console.log('Index out of range. finishing...');
+         return;
+       }
+       cur = currencies[index];
+       if (cur['name'] == target_currency) {
+         console.log('Index ' + index + ' is same with target_currency. Skipping...');
+         refresh_currency(index+1);
+         return;
+       }
+
+       exchg(cur['name'], target_currency, function(rate) {
+         $('#exchanges').append('1 ' + cur['name'] + ' = ' + target_currency + ' ' + rate + '<br/>');
+         refresh_currency(index+1);
+       });
+     }
+
+     var refresh = function() {
+       $('#exchanges').html('');
+       refresh_currency(0);
+     };
+
+
+     $(document).ready(function() {
+       refresh();
+     });
+    </script>
   </body>
 </html>
