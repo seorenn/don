@@ -3,7 +3,7 @@ var currencies = [
   { name: 'USD', desc: 'U.S. Dollar' },
   { name: 'EUR', desc: 'Euro' },
   { name: 'JPY', desc: 'Japanese Yen' },
-  { name: 'CNY', desc: 'Chinese Yuan' },
+  { name: 'CNY', desc: 'Chinese Yuan' }//,
   //{ name: 'RUB', desc: 'Russian Rouble' },
   //{ name: 'CAD', desc: 'Canadian Dollar' },
   //{ name: 'HKD', desc: 'Hong Kong Dollar' },

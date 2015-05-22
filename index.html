@@ -6,9 +6,21 @@
   </head>
   <body>
     <div id="exchanges">
+      <h2>Current Exchange Rates</h2>
+      <ul id="exchanges_datas">
+      </ul>
     </div>
 
     <div id="calculator">
+      <h2>Exchange Rate Calculator</h2>
+      <form id="editor">
+        <input type="text" name="currency"/>
+        <select id="unit" name="unit">
+        </select>
+        <button type="button" id="conversion_button">Add Conversion</button>
+      </form>
+      <ul id="results">
+      </ul>
     </div>
 
     <script type="text/javascript">
@@ -19,6 +31,14 @@
      }
 
      var target_currency = currencies[0]['name'];
+
+     // build editor's currency data
+
+     for (var i=0; i < currencies.length; i++) {
+       var cur = currencies[i];
+       if (cur['name'] == target_currency) continue;
+       $('#unit').append('<option value="' + cur['name'] + '">' + cur['name'] + '</option>');
+     }
 
      var refresh_currency = function(index) {
        console.log('Refreshing currency with index ' + index);
@@ -37,16 +57,20 @@
        }
 
        exchg(cur['name'], target_currency, function(rate) {
-         $('#exchanges').append('1 ' + cur['name'] + ' = ' + target_currency + ' ' + rate + '<br/>');
+         $('#exchanges_datas').append('<li>1 ' + cur['name'] + ' = ' + target_currency + ' ' + rate + '</li>');
          refresh_currency(index+1);
        });
      }
 
      var refresh = function() {
-       $('#exchanges').html('');
+       $('#exchanges_datas').html('');
        refresh_currency(0);
      };
 
+     var results = [];
+
+     var add_conversion = function() {
+     };
 
      $(document).ready(function() {
        refresh();
