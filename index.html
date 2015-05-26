@@ -5,6 +5,13 @@
     <script type="text/javascript" src="js/exchg.js"></script>
   </head>
   <body>
+    <div id="config">
+      <form id="config-form">
+      Target Currency
+        <select id="config-target">
+        </select>
+      </form>
+    </div>
     <div id="exchanges">
       <h2>Current Exchange Rates</h2>
       <ul id="exchanges_datas">
@@ -24,21 +31,45 @@
     </div>
 
     <script type="text/javascript">
+     var point_round_2 = function(value) {
+       return Math.round(value * 100) / 100;
+     };
+
      // load cache from cookie
-     var cached_data = get_cookie('exchg');
-     if (cached_data != undefined) {
-       currencies_cache = JSON.parse(cached_data);
+     var refresh_cache = function() {
+       var cached_data = get_cookie('exchg');
+       if (cached_data != undefined) {
+         currencies_cache = JSON.parse(cached_data);
+       }
      }
 
      var target_currency = currencies[0]['name'];
 
      // build editor's currency data
+     var selecting_target_index = -1;
 
-     for (var i=0; i < currencies.length; i++) {
-       var cur = currencies[i];
-       if (cur['name'] == target_currency) continue;
-       $('#unit').append('<option value="' + cur['name'] + '">' + cur['name'] + '</option>');
+     var update_editor_select_box = function() {
+       // Build currencies select box for target and calculator
+       for (var i=0; i < currencies.length; i++) {
+         var cur = currencies[i];
+
+         $('#config-target').append('<option value="' + cur['name'] + '">' + cur['name'] + '</option>');
+
+         if (cur['name'] == target_currency) {
+           selecting_target_index = i;
+           continue;
+         }
+         $('#unit').append('<option value="' + cur['name'] + '">' + cur['name'] + '</option>');
+       }
      }
+
+     // Set selected default target currency select box
+     console.log('Current Selecting Target Index: ' + selecting_target_index);
+     if (selecting_target_index >= 0) {
+       $('#config-target option[value="' + currencies[selecting_target_index] + '"]').prop('selected', true);
+     }
+
+     var rates = {};
 
      var refresh_currency = function(index) {
        console.log('Refreshing currency with index ' + index);
@@ -57,7 +88,9 @@
        }
 
        exchg(cur['name'], target_currency, function(rate) {
-         $('#exchanges_datas').append('<li>1 ' + cur['name'] + ' = ' + target_currency + ' ' + rate + '</li>');
+         rates[cur['name']] = rate;
+         var tmprate = point_round_2(rate);
+         $('#exchanges_datas').append('<li>1 ' + cur['name'] + ' = ' + target_currency + ' ' + tmprate + '</li>');
          refresh_currency(index+1);
        });
      }
@@ -70,10 +103,32 @@
      var results = [];
 
      var add_conversion = function() {
+       var price = $('#editor input[name="currency"]').val();
+       var unit = $('#unit option:selected').val();
+       var rate = rates[unit];
+       var result = point_round_2(price * rate);
+
+       console.log('Price = ' + price + ', Unit = ' + unit + ', Rate = ' + rate + ', Result = ' + (price * rate));
+
+       $('#results').append('<li>' + price + ' ' + unit + ' = ' + result + ' ' + target_currency + '</li>');
      };
 
      $(document).ready(function() {
+       refresh_cache();
+       update_editor_select_box();
        refresh();
+       $('#conversion_button').click(function() {
+         add_conversion();
+       });
+       $(document).on('change', '#config-target', function() {
+         target_currency = $('#config-target option:selected').val();
+         $('#exchanges_datas').html('');
+         $('#results').html('');
+         $('#unit').html('');
+         $('#target-config').html('');
+         update_editor_select_box();
+         refresh();
+       });
      });
     </script>
   </body>
