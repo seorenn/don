@@ -17,3 +17,7 @@ var get_cookie = function(name) {
 
   return undefined;
 };
+
+var expire_cookie = function(name) {
+  set_cookie(name, '', 0);
+};

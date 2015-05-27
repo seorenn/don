@@ -1,22 +1,22 @@
 var currencies = [
-  { name: 'KRW', desc: 'Korean Won' },
-  { name: 'USD', desc: 'U.S. Dollar' },
-  { name: 'EUR', desc: 'Euro' },
-  { name: 'JPY', desc: 'Japanese Yen' },
-  { name: 'CNY', desc: 'Chinese Yuan' }//,
-  //{ name: 'RUB', desc: 'Russian Rouble' },
-  //{ name: 'CAD', desc: 'Canadian Dollar' },
-  //{ name: 'HKD', desc: 'Hong Kong Dollar' },
-  //{ name: 'SGD', desc: 'Singapore Dollar' },
-  //{ name: 'ZWD', desc: 'Zimbabwe Dollar' } // Just joke :-p
+  { name: 'KRW', desc: 'Korean Won', unitprice: 1000 },
+  { name: 'USD', desc: 'U.S. Dollar', unitprice: 1 },
+  { name: 'EUR', desc: 'Euro', unitprice: 1 },
+  { name: 'JPY', desc: 'Japanese Yen', unitprice: 100 },
+  { name: 'CNY', desc: 'Chinese Yuan', unitprice: 10 }//,
+  //{ name: 'RUB', desc: 'Russian Rouble', unitprice: 1 },
+  //{ name: 'CAD', desc: 'Canadian Dollar', unitprice: 1 },
+  //{ name: 'HKD', desc: 'Hong Kong Dollar', unitprice: 1 },
+  //{ name: 'SGD', desc: 'Singapore Dollar', unitprice: 1 },
+  //{ name: 'ZWD', desc: 'Zimbabwe Dollar', unitprice: 1 } // Just joke :-p
 ];
 
 var currencies_cache = {};
 
 var exchg_yahoo = function(from, to, complete) {
-  if (from in currencies_cache) {
+  if (to in currencies_cache && from in currencies_cache[to]) {
     console.log('Found ' + from + ' data from cookie. Skipping Request...');
-    complete(currencies_cache[from]);
+    complete(currencies_cache[to][from]);
     return;
   }
 
@@ -27,13 +27,17 @@ var exchg_yahoo = function(from, to, complete) {
   $.ajax({url: url})
   .done(function(data) {
     var rate = data['query']['results']['rate']['Rate']
-    currencies_cache[from] = rate;
+    var to_object = currencies_cache[to];
+    if (!to_object || Object.keys(to_object).length <= 0) {
+      currencies_cache[to] = {};
+    }
+    currencies_cache[to][from] = rate;
     complete(rate);
   });
 };
 
 var exchg_wsx = function(from, to, complete) {
-  if (from in currencies_cache) {
+  if (to in currencies_cache && from in currencies_cache[to]) {
     complete(currencies_cache[from]);
     return;
   }

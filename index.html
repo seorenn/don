@@ -10,6 +10,7 @@
       Target Currency
         <select id="config-target">
         </select>
+        <button type="button" id="remove_cookie_button">Remove Cookie</button>
       </form>
     </div>
     <div id="exchanges">
@@ -20,10 +21,12 @@
 
     <div id="calculator">
       <h2>Exchange Rate Calculator</h2>
-      <form id="editor">
-        <input type="text" name="currency"/>
+      <form id="editor" onsubmit="return false">
+        <span class="calculator_text">Convert</span>
+        <input type="text" name="currency" id="currency_input"/>
         <select id="unit" name="unit">
         </select>
+        <span class="calculator_text" id="postfix_calculator"></span>
         <button type="button" id="conversion_button">Add Conversion</button>
       </form>
       <ul id="results">
@@ -48,12 +51,18 @@
      // build editor's currency data
      var selecting_target_index = -1;
 
-     var update_editor_select_box = function() {
+     var update_editor_select_box = function(build_all) {
+       if (build_all) {
+         $('#config-target').html('');
+       }
+
        // Build currencies select box for target and calculator
        for (var i=0; i < currencies.length; i++) {
          var cur = currencies[i];
 
-         $('#config-target').append('<option value="' + cur['name'] + '">' + cur['name'] + '</option>');
+         if (build_all) {
+           $('#config-target').append('<option value="' + cur['name'] + '">' + cur['name'] + '</option>');
+         }
 
          if (cur['name'] == target_currency) {
            selecting_target_index = i;
@@ -90,35 +99,49 @@
        exchg(cur['name'], target_currency, function(rate) {
          rates[cur['name']] = rate;
          var tmprate = point_round_2(rate);
-         $('#exchanges_datas').append('<li>1 ' + cur['name'] + ' = ' + target_currency + ' ' + tmprate + '</li>');
+         $('#exchanges_datas').append('<li>1 ' + cur['name'] + ' = ' + target_currency + ' ' + tmprate + ' (' + rate + ')</li>');
          refresh_currency(index+1);
        });
      }
 
      var refresh = function() {
        $('#exchanges_datas').html('');
+       $('#postfix_calculator').html('to ' + target_currency);
        refresh_currency(0);
      };
 
      var results = [];
 
      var add_conversion = function() {
-       var price = $('#editor input[name="currency"]').val();
-       var unit = $('#unit option:selected').val();
-       var rate = rates[unit];
-       var result = point_round_2(price * rate);
+       var price = parseFloat($('#editor input[name="currency"]').val());
+       if (price) {
+         var unit = $('#unit option:selected').val();
+         var rate = rates[unit];
+         var result = point_round_2(price * rate);
 
-       console.log('Price = ' + price + ', Unit = ' + unit + ', Rate = ' + rate + ', Result = ' + (price * rate));
+         console.log('Price = ' + price + ', Unit = ' + unit + ', Rate = ' + rate + ', Result = ' + (price * rate));
 
-       $('#results').append('<li>' + price + ' ' + unit + ' = ' + result + ' ' + target_currency + '</li>');
+         $('#results').append('<li>' + price + ' ' + unit + ' = ' + result + ' ' + target_currency + '</li>');
+       }
+       $('#editor input[name="currency"]').val('');
      };
 
      $(document).ready(function() {
+       $('#remove_cookie_button').click(function() {
+         console.log('Removing cookie...');
+         expire_cookie('exchg');
+       });
+
        refresh_cache();
-       update_editor_select_box();
+       update_editor_select_box(true);
        refresh();
        $('#conversion_button').click(function() {
          add_conversion();
+       });
+       $('#currency_input').keypress(function(e) {
+         if (e.which == 13) {
+           add_conversion();
+         }
        });
        $(document).on('change', '#config-target', function() {
          target_currency = $('#config-target option:selected').val();
@@ -126,9 +149,10 @@
          $('#results').html('');
          $('#unit').html('');
          $('#target-config').html('');
-         update_editor_select_box();
+         update_editor_select_box(false);
          refresh();
        });
+       $('#currency_input').focus();
      });
     </script>
   </body>
