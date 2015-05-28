@@ -1,4 +1,4 @@
-var currencies = [
+var config_currencies = [
   { name: 'KRW', desc: 'Korean Won', unitprice: 1000 },
   { name: 'USD', desc: 'U.S. Dollar', unitprice: 1 },
   { name: 'EUR', desc: 'Euro', unitprice: 1 },
@@ -11,7 +11,20 @@ var currencies = [
   //{ name: 'ZWD', desc: 'Zimbabwe Dollar', unitprice: 1 } // Just joke :-p
 ];
 
-var currencies_cache = {};
+var name_list_of_currencies = function(target) {
+  var result = [];
+
+  for (var i=0; i < config_currencies.length; i++) {
+    var item = config_currencies[i];
+    if (item.name != target) {
+      result.push(item.name);
+    }
+  }
+
+  return result;
+};
+
+/*var currencies_cache = {};*/
 
 /*http://query.yahooapis.com/v1/public/yql?q=
  * select%20*%20from%20yahoo.finance.xchange%20where%20pair%20in%20%28%22
@@ -31,7 +44,6 @@ var build_yahoo_exchg_url = function(fromlist, totarget) {
     }
     var item = fromlist[i];
     var itemstr = item + totarget;
-    console.log('itemstr = ' + itemstr);
     curs = curs + '%22' + itemstr + '%22';
   }
 
@@ -66,6 +78,7 @@ var exchg_yahoo_bulk = function(fromlist, totarget, complete) {
   });
 };
 
+/*
 var exchg_yahoo = function(from, to, complete) {
   if (to in currencies_cache && from in currencies_cache[to]) {
     console.log('Found ' + from + ' data from cookie. Skipping Request...');
@@ -103,3 +116,4 @@ var exchg = function(from, to, complete) {
   // select function context
   exchg_yahoo(from, to, complete);
 };
+*/

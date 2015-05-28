@@ -10,7 +10,7 @@
       Target Currency
         <select id="config-target">
         </select>
-        <button type="button" id="remove_cookie_button">Remove Cookie</button>
+        <!--<button type="button" id="remove_cookie_button">Remove Cookie</button>-->
       </form>
     </div>
     <div id="exchanges">
@@ -38,15 +38,7 @@
        return Math.round(value * 100) / 100;
      };
 
-     // load cache from cookie
-     var refresh_cache = function() {
-       var cached_data = get_cookie('exchg');
-       if (cached_data != undefined) {
-         currencies_cache = JSON.parse(cached_data);
-       }
-     }
-
-     var target_currency = currencies[0]['name'];
+     var target_currency = config_currencies[0].name;
 
      // build editor's currency data
      var selecting_target_index = -1;
@@ -57,18 +49,18 @@
        }
 
        // Build currencies select box for target and calculator
-       for (var i=0; i < currencies.length; i++) {
-         var cur = currencies[i];
+       for (var i=0; i < config_currencies.length; i++) {
+         var cur = config_currencies[i];
 
          if (build_all) {
-           $('#config-target').append('<option value="' + cur['name'] + '">' + cur['name'] + '</option>');
+           $('#config-target').append('<option value="' + cur.name + '">' + cur.name + '</option>');
          }
 
-         if (cur['name'] == target_currency) {
+         if (cur.name == target_currency) {
            selecting_target_index = i;
            continue;
          }
-         $('#unit').append('<option value="' + cur['name'] + '">' + cur['name'] + '</option>');
+         $('#unit').append('<option value="' + cur.name + '">' + cur.name + '</option>');
        }
      }
 
@@ -80,46 +72,36 @@
 
      var rates = {};
 
-     var refresh_currency = function(index) {
-       console.log('Refreshing currency with index ' + index);
-       if (index >= currencies.length) {
-         console.log('Index out of range. finishing...');
-         // save cache using cookie
-         var json_data = JSON.stringify(currencies_cache);
-         set_cookie('exchg', json_data, 60 * 60);
-         return;
-       }
-       cur = currencies[index];
-       if (cur['name'] == target_currency) {
-         console.log('Index ' + index + ' is same with target_currency. Skipping...');
-         refresh_currency(index+1);
-         return;
-       }
-
-       exchg(cur['name'], target_currency, function(rate) {
-         rates[cur['name']] = rate;
-         var tmprate = point_round_2(rate);
-         $('#exchanges_datas').append('<li>1 ' + cur['name'] + ' = ' + target_currency + ' ' + tmprate + ' (' + rate + ')</li>');
-         refresh_currency(index+1);
-       });
-     }
-
      var refresh = function() {
        $('#exchanges_datas').html('');
        $('#postfix_calculator').html('to ' + target_currency);
-       refresh_currency(0);
-     };
+       //refresh_currency(0);
 
-     var results = [];
+       var fromlist = name_list_of_currencies(target_currency);
+       exchg_yahoo_bulk(fromlist, target_currency, function(datas) {
+         rates = datas;
+
+         var keys = Object.keys(datas);
+         for (var i=0; i < keys.length; i++) {
+           var key = keys[i];
+           var r = datas[key];
+           var fromname = key.substring(0, 3);
+           var toname = key.substring(3, 6);
+           var ratedata = r.rate;
+           $('#exchanges_datas').append('<li>1 ' + fromname + ' = ' + target_currency + ' ' + point_round_2(ratedata) + ' (' + ratedata + ')</li>');
+         }
+       });
+     };
 
      var add_conversion = function() {
        var price = parseFloat($('#editor input[name="currency"]').val());
        if (price) {
          var unit = $('#unit option:selected').val();
-         var rate = rates[unit];
-         var result = point_round_2(price * rate);
+         var key = unit + target_currency;
+         var rateitem = rates[key];
+         var result = point_round_2(price * rateitem.rate);
 
-         console.log('Price = ' + price + ', Unit = ' + unit + ', Rate = ' + rate + ', Result = ' + (price * rate));
+         console.log('Price = ' + price + ', Unit = ' + unit + ', Rate = ' + rateitem.rate + ', Result = ' + (price * rateitem.rate));
 
          $('#results').append('<li>' + price + ' ' + unit + ' = ' + result + ' ' + target_currency + '</li>');
        }
@@ -127,12 +109,6 @@
      };
 
      $(document).ready(function() {
-       $('#remove_cookie_button').click(function() {
-         console.log('Removing cookie...');
-         expire_cookie('exchg');
-       });
-
-       refresh_cache();
        update_editor_select_box(true);
        refresh();
        $('#conversion_button').click(function() {
