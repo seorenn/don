@@ -1,199 +1,226 @@
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <script type="text/javascript" src="http://seorenn.github.io/js/jquery.min.js"></script>
-    <script type="text/javascript" src="js/cookie.js"></script>
-    <script type="text/javascript" src="js/exchg.js"></script>
-  </head>
-  <body>
-    <div id="config">
-      <form id="config-form">
-      필요한 통화 단위(Currency)
-        <select id="config-target">
-        </select>
-        <!--<button type="button" id="remove_cookie_button">Remove Cookie</button>-->
-      </form>
-    </div>
-    <div id="exchanges">
-      <h2>대충 지금 환율(Current Exchange Rates</h2>
-      <ul id="exchanges_datas">
-      </ul>
-    </div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width, height=device-height"/>
+        <script type="text/javascript" src="http://seorenn.github.io/js/jquery.min.js"></script>
+        <script type="text/javascript" src="js/cookie.js"></script>
+        <script type="text/javascript" src="js/exchg.js"></script>
+        <link href="http://seorenn.github.io/css/rennweb.css" media="all" type="text/css" rel="stylesheet" />
+        <title>환율 및 관련 도구들(Exchange Rate and Tools) - Rennweb</title>
+    </head>
+    <body>
+        <div class="frame">
+            <div class="frame-row frame-row-header">
+                <div class="content-frame">
+                    <div id="header">
+                        <h1>환율 및 관련 도구들(Exchange Rate and Tools)</h1>
+                        <h2>내가 이걸 왜 만들었는지 이유는 까먹었지만 어쨌든 제목대로의 도구</h2>
+                    </div>
+                </div>
+            </div>
 
-    <div id="calculator">
-      <h2>환전 계산기(Currency Convertor)</h2>
-      <form id="editor" onsubmit="return false">
-        <span class="calculator_text">대충</span>
-        <input type="text" name="currency" id="currency_input"/>
-        <select id="unit" name="unit">
-        </select>
-        <span class="calculator_text" id="postfix_calculator"> 를 </span>
-        <button type="button" id="conversion_button">설정된 통화로 바꿔보기(Add Conversion)</button>
-      </form>
-      <ul id="results">
-      </ul>
-    </div>
+            <div id="config" class="frame-row">
+                <div class="content-frame">
+                    <form id="config-form">
+                        필요한 통화 단위(Currency)
+                        <select id="config-target">
+                        </select>
+                        <!--<button type="button" id="remove_cookie_button">Remove Cookie</button>-->
+                    </form>
+                </div>
+            </div>
+            <div id="exchanges" class="frame-row">
+                <div class="content-frame">
+                    <h2>대충 지금 환율(Current Exchange Rates</h2>
+                    <ul id="exchanges_datas">
+                    </ul>
+                </div>
+            </div>
 
-    <script type="text/javascript">
-     var point_round_2 = function(value) {
-       return Math.round(value * 100) / 100;
-     };
+            <div id="calculator" class="frame-row">
+                <div class="content-frame">
+                    <h2>환전 계산기(Currency Convertor)</h2>
+                    <form id="editor" onsubmit="return false">
+                        <span class="calculator_text">대충</span>
+                        <input type="text" name="currency" id="currency_input"/>
+                        <select id="unit" name="unit">
+                        </select>
+                        <span class="calculator_text" id="postfix_calculator"> 를 </span>
+                        <button type="button" id="conversion_button">설정된 통화로 바꿔보기(Add Conversion)</button>
+                    </form>
+                    <ul id="results">
+                    </ul>
+                </div>
+            </div>
 
-     var rates = {};
+            <div class="frame-row frame-row-footer">
+                <div class="content-frame">
+                    <div id="footer">
+                    </div>
+                </div>
+            </div>
 
-     var target_currency_object = config_currencies[0];
-     var target_currency = target_currency_object.name;
+            <script type="text/javascript">
+var point_round_2 = function(value) {
+    return Math.round(value * 100) / 100;
+};
 
-     // build editor's currency data
-     var selecting_target_index = -1;
+var rates = {};
 
-     var get_target_object = function(target) {
-       for (var i=0; i < config_currencies.length; i++) {
-         if (config_currencies[i].name == target) {
-           return config_currencies[i];
-         }
-       }
-       return undefined;
-     };
+var target_currency_object = config_currencies[0];
+var target_currency = target_currency_object.name;
 
-     var save_cache = function() {
-       var json = JSON.stringify(rates);
-       set_cookie('exchg', json, 30*60);
-     };
-     var load_cache = function() {
-       var json = get_cookie('exchg');
-       if (!json) return false;
+// build editor's currency data
+var selecting_target_index = -1;
 
-       var object = JSON.parse(json);
-       if (!object) return false;
+var get_target_object = function(target) {
+    for (var i=0; i < config_currencies.length; i++) {
+        if (config_currencies[i].name == target) {
+            return config_currencies[i];
+        }
+    }
+    return undefined;
+};
 
-       rates = object
+var save_cache = function() {
+    var json = JSON.stringify(rates);
+    set_cookie('exchg', json, 30*60);
+};
+var load_cache = function() {
+    var json = get_cookie('exchg');
+    if (!json) return false;
 
-       return true;
-     };
-     var validate_cache = function() {
-       var list = name_list_of_currencies(target_currency);
-       var keys = Object.keys(rates);
-       for (var i=0; i < list.length; i++) {
-         var name = list[i];
-         var key = name + target_currency;
-         if (keys.indexOf(key) < 0) { return false; }
-       }
-       return true;
-     };
+    var object = JSON.parse(json);
+    if (!object) return false;
 
-     var update_editor_select_box = function(build_all) {
-       if (build_all) {
-         $('#config-target').html('');
-       }
+    rates = object
 
-       // Build currencies select box for target and calculator
-       for (var i=0; i < config_currencies.length; i++) {
-         var cur = config_currencies[i];
+        return true;
+};
+var validate_cache = function() {
+    var list = name_list_of_currencies(target_currency);
+    var keys = Object.keys(rates);
+    for (var i=0; i < list.length; i++) {
+        var name = list[i];
+        var key = name + target_currency;
+        if (keys.indexOf(key) < 0) { return false; }
+    }
+    return true;
+};
 
-         if (build_all) {
-           $('#config-target').append('<option value="' + cur.name + '">' + cur.unit + ' - ' + cur.desc + '</option>');
-         }
+var update_editor_select_box = function(build_all) {
+    if (build_all) {
+        $('#config-target').html('');
+    }
 
-         if (cur.name == target_currency) {
-           selecting_target_index = i;
-           continue;
-         }
-         $('#unit').append('<option value="' + cur.name + '">' + cur.unit + ' - ' + cur.desc + '</option>');
-       }
-     }
+    // Build currencies select box for target and calculator
+    for (var i=0; i < config_currencies.length; i++) {
+        var cur = config_currencies[i];
 
-     // Set selected default target currency select box
-     console.log('Current Selecting Target Index: ' + selecting_target_index);
-     if (selecting_target_index >= 0) {
-       $('#config-target option[value="' + currencies[selecting_target_index] + '"]').prop('selected', true);
-     }
+        if (build_all) {
+            $('#config-target').append('<option value="' + cur.name + '">' + cur.unit + ' - ' + cur.desc + '</option>');
+        }
 
-     var make_ui = function(datas) {
-       var keys = Object.keys(datas);
-       for (var i=0; i < keys.length; i++) {
-         var key = keys[i];
-         var r = datas[key];
-         var fromname = get_target_object(key.substring(0, 3)).unit;
-         var toname = target_currency_object.unit;
-         var ratedata = r.rate;
-         $('#exchanges_datas').append('<li>1 ' + fromname + ' = ' + ' ' + point_round_2(ratedata) + ' ' + toname + ' (' + ratedata + ')</li>');
-       }
-     };
+        if (cur.name == target_currency) {
+            selecting_target_index = i;
+            continue;
+        }
+        $('#unit').append('<option value="' + cur.name + '">' + cur.unit + ' - ' + cur.desc + '</option>');
+    }
+}
 
-     var refresh = function() {
-       $('#exchanges_datas').html('');
-       $('#postfix_calculator').html('to ' + target_currency);
-       //refresh_currency(0);
+// Set selected default target currency select box
+console.log('Current Selecting Target Index: ' + selecting_target_index);
+if (selecting_target_index >= 0) {
+    $('#config-target option[value="' + currencies[selecting_target_index] + '"]').prop('selected', true);
+}
 
-       var fromlist = name_list_of_currencies(target_currency);
-       exchg_yahoo_bulk(fromlist, target_currency, function(datas) {
-         rates = datas;
-         make_ui(datas);
-         /*
-         var keys = Object.keys(datas);
-         for (var i=0; i < keys.length; i++) {
+var make_ui = function(datas) {
+    var keys = Object.keys(datas);
+    for (var i=0; i < keys.length; i++) {
+        var key = keys[i];
+        var r = datas[key];
+        var fromname = get_target_object(key.substring(0, 3)).unit;
+        var toname = target_currency_object.unit;
+        var ratedata = r.rate;
+        $('#exchanges_datas').append('<li>1 ' + fromname + ' = ' + ' ' + point_round_2(ratedata) + ' ' + toname + ' (' + ratedata + ')</li>');
+    }
+};
+
+var refresh = function() {
+    $('#exchanges_datas').html('');
+    $('#postfix_calculator').html('to ' + target_currency);
+    //refresh_currency(0);
+
+    var fromlist = name_list_of_currencies(target_currency);
+    exchg_yahoo_bulk(fromlist, target_currency, function(datas) {
+        rates = datas;
+        make_ui(datas);
+        /*
+           var keys = Object.keys(datas);
+           for (var i=0; i < keys.length; i++) {
            var key = keys[i];
            var r = datas[key];
            var fromname = key.substring(0, 3);
            var toname = key.substring(3, 6);
            var ratedata = r.rate;
            $('#exchanges_datas').append('<li>1 ' + fromname + ' = ' + target_currency + ' ' + point_round_2(ratedata) + ' (' + ratedata + ')</li>');
-         }
+           }
          */
-         save_cache();
-         $('#currency_input').focus();
-       });
-     };
+        save_cache();
+        $('#currency_input').focus();
+    });
+};
 
-     var add_conversion = function() {
-       var price = parseFloat($('#editor input[name="currency"]').val());
-       if (price) {
-         var unit = $('#unit option:selected').val();
-         var unitobj = get_target_object(unit);
-         var key = unit + target_currency;
-         var rateitem = rates[key];
-         var result = point_round_2(price * rateitem.rate);
+var add_conversion = function() {
+    var price = parseFloat($('#editor input[name="currency"]').val());
+    if (price) {
+        var unit = $('#unit option:selected').val();
+        var unitobj = get_target_object(unit);
+        var key = unit + target_currency;
+        var rateitem = rates[key];
+        var result = point_round_2(price * rateitem.rate);
 
-         console.log('Price = ' + price + ', Unit = ' + unit + ', Rate = ' + rateitem.rate + ', Result = ' + (price * rateitem.rate));
+        console.log('Price = ' + price + ', Unit = ' + unit + ', Rate = ' + rateitem.rate + ', Result = ' + (price * rateitem.rate));
 
-         $('#results').append('<li>' + price + ' ' + unitobj.unit + ' = ' + result + ' ' + target_currency_object.unit + '</li>');
-       }
-       $('#editor input[name="currency"]').val('');
-     };
+        $('#results').append('<li>' + price + ' ' + unitobj.unit + ' = ' + result + ' ' + target_currency_object.unit + '</li>');
+    }
+    $('#editor input[name="currency"]').val('');
+};
 
-     $(document).ready(function() {
-       update_editor_select_box(true);
+$(document).ready(function() {
+    update_editor_select_box(true);
 
-       if (load_cache() && validate_cache()) {
-         console.log('Build Datas with Cache');
-         make_ui(rates);
-       } else {
-         console.log('Refreshing...');
-         refresh();
-       }
+    if (load_cache() && validate_cache()) {
+        console.log('Build Datas with Cache');
+        make_ui(rates);
+    } else {
+        console.log('Refreshing...');
+        refresh();
+    }
 
-       $('#conversion_button').click(function() {
-         add_conversion();
-       });
-       $('#currency_input').keypress(function(e) {
-         if (e.which == 13) {
-           add_conversion();
-         }
-       });
-       $(document).on('change', '#config-target', function() {
-         target_currency = $('#config-target option:selected').val();
-         target_currency_object = get_target_object(target_currency);
-         $('#exchanges_datas').html('');
-         $('#results').html('');
-         $('#unit').html('');
-         $('#target-config').html('');
-         update_editor_select_box(false);
-         refresh();
-       });
-       $('#currency_input').focus();
-     });
-    </script>
-  </body>
+    $('#conversion_button').click(function() {
+        add_conversion();
+    });
+    $('#currency_input').keypress(function(e) {
+        if (e.which == 13) {
+            add_conversion();
+        }
+    });
+    $(document).on('change', '#config-target', function() {
+        target_currency = $('#config-target option:selected').val();
+        target_currency_object = get_target_object(target_currency);
+        $('#exchanges_datas').html('');
+        $('#results').html('');
+        $('#unit').html('');
+        $('#target-config').html('');
+        update_editor_select_box(false);
+        refresh();
+    });
+    $('#currency_input').focus();
+});
+            </script>
+        </div>
+    </body>
 </html>
