@@ -1,5 +1,7 @@
 <html>
   <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <script type="text/javascript" src="http://seorenn.github.io/js/jquery.min.js"></script>
     <script type="text/javascript" src="js/cookie.js"></script>
     <script type="text/javascript" src="js/exchg.js"></script>
@@ -7,27 +9,27 @@
   <body>
     <div id="config">
       <form id="config-form">
-      Target Currency
+      필요한 통화 단위(Currency)
         <select id="config-target">
         </select>
         <!--<button type="button" id="remove_cookie_button">Remove Cookie</button>-->
       </form>
     </div>
     <div id="exchanges">
-      <h2>Current Exchange Rates</h2>
+      <h2>대충 지금 환율(Current Exchange Rates</h2>
       <ul id="exchanges_datas">
       </ul>
     </div>
 
     <div id="calculator">
-      <h2>Exchange Rate Calculator</h2>
+      <h2>환전 계산기(Currency Convertor)</h2>
       <form id="editor" onsubmit="return false">
-        <span class="calculator_text">Convert</span>
+        <span class="calculator_text">대충</span>
         <input type="text" name="currency" id="currency_input"/>
         <select id="unit" name="unit">
         </select>
-        <span class="calculator_text" id="postfix_calculator"></span>
-        <button type="button" id="conversion_button">Add Conversion</button>
+        <span class="calculator_text" id="postfix_calculator"> 를 </span>
+        <button type="button" id="conversion_button">설정된 통화로 바꿔보기(Add Conversion)</button>
       </form>
       <ul id="results">
       </ul>
@@ -40,10 +42,20 @@
 
      var rates = {};
 
-     var target_currency = config_currencies[0].name;
+     var target_currency_object = config_currencies[0];
+     var target_currency = target_currency_object.name;
 
      // build editor's currency data
      var selecting_target_index = -1;
+
+     var get_target_object = function(target) {
+       for (var i=0; i < config_currencies.length; i++) {
+         if (config_currencies[i].name == target) {
+           return config_currencies[i];
+         }
+       }
+       return undefined;
+     };
 
      var save_cache = function() {
        var json = JSON.stringify(rates);
@@ -81,14 +93,14 @@
          var cur = config_currencies[i];
 
          if (build_all) {
-           $('#config-target').append('<option value="' + cur.name + '">' + cur.name + '</option>');
+           $('#config-target').append('<option value="' + cur.name + '">' + cur.unit + ' - ' + cur.desc + '</option>');
          }
 
          if (cur.name == target_currency) {
            selecting_target_index = i;
            continue;
          }
-         $('#unit').append('<option value="' + cur.name + '">' + cur.name + '</option>');
+         $('#unit').append('<option value="' + cur.name + '">' + cur.unit + ' - ' + cur.desc + '</option>');
        }
      }
 
@@ -103,10 +115,10 @@
        for (var i=0; i < keys.length; i++) {
          var key = keys[i];
          var r = datas[key];
-         var fromname = key.substring(0, 3);
-         var toname = key.substring(3, 6);
+         var fromname = get_target_object(key.substring(0, 3)).unit;
+         var toname = target_currency_object.unit;
          var ratedata = r.rate;
-         $('#exchanges_datas').append('<li>1 ' + fromname + ' = ' + target_currency + ' ' + point_round_2(ratedata) + ' (' + ratedata + ')</li>');
+         $('#exchanges_datas').append('<li>1 ' + fromname + ' = ' + ' ' + point_round_2(ratedata) + ' ' + toname + ' (' + ratedata + ')</li>');
        }
      };
 
@@ -131,6 +143,7 @@
          }
          */
          save_cache();
+         $('#currency_input').focus();
        });
      };
 
@@ -138,13 +151,14 @@
        var price = parseFloat($('#editor input[name="currency"]').val());
        if (price) {
          var unit = $('#unit option:selected').val();
+         var unitobj = get_target_object(unit);
          var key = unit + target_currency;
          var rateitem = rates[key];
          var result = point_round_2(price * rateitem.rate);
 
          console.log('Price = ' + price + ', Unit = ' + unit + ', Rate = ' + rateitem.rate + ', Result = ' + (price * rateitem.rate));
 
-         $('#results').append('<li>' + price + ' ' + unit + ' = ' + result + ' ' + target_currency + '</li>');
+         $('#results').append('<li>' + price + ' ' + unitobj.unit + ' = ' + result + ' ' + target_currency_object.unit + '</li>');
        }
        $('#editor input[name="currency"]').val('');
      };
@@ -170,6 +184,7 @@
        });
        $(document).on('change', '#config-target', function() {
          target_currency = $('#config-target option:selected').val();
+         target_currency_object = get_target_object(target_currency);
          $('#exchanges_datas').html('');
          $('#results').html('');
          $('#unit').html('');
