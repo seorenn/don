@@ -4,7 +4,7 @@ body {
   padding: 0;
   /*background: #fdf6e3;*/
   background: white;
-  color: #657b83;
+  color: #444444;
   font-family: sans-serif;
 }
 
@@ -19,12 +19,12 @@ body {
 }
 
 .frame-row-header {
-  background: #93a1a1;
+  background: white;
   color: #073642;
 }
 
 .frame-row-footer {
-  background: #93a1a1;
+  background: white;
   color: #073642;
 }
 
@@ -37,6 +37,8 @@ body {
 #header {
   margin: 0 auto;
   padding: 16px;
+  padding-top: 64px;
+  padding-bottom: 32px;
 }
 
 #header h1 {
@@ -49,11 +51,13 @@ body {
   font-size: 1.5em;
   margin: 0;
   padding: 0;
+  color: #cccccc;
 }
 
-#content {
+.content {
   margin: 0 auto;
-  padding: 16px;
+  padding-left: 16px;
+  padding-right: 16px;
   font-size: 1em;
   line-height: 1.5em;
 }
