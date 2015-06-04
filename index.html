@@ -152,7 +152,14 @@
            var fromname = get_target_object(key.substring(0, 3)).unit;
            var toname = target_currency_object.unit;
            var ratedata = r.rate;
-           $('#exchanges_datas').append('<li>1 ' + fromname + ' = ' + ' ' + point_round_2(ratedata) + ' ' + toname + ' <span class="minirate-text">(' + ratedata + ')</span></li>');
+           var standard = 1;
+
+           while (ratedata != 0 && ratedata < 10.0) {
+             ratedata *= 10;
+             standard *= 10;
+           }
+
+           $('#exchanges_datas').append('<li>' + standard + ' ' + fromname + ' = ' + ' ' + point_round_2(ratedata) + ' ' + toname + ' <span class="minirate-text">(' + r.rate + ' / 1)</span></li>');
          }
        };
 
