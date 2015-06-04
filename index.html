@@ -29,7 +29,6 @@
                         필요한 통화 단위(Currency)
               <select id="config-target">
               </select>
-              <!--<button type="button" id="remove_cookie_button">Remove Cookie</button>-->
             </form>
           </div>
         </div>
@@ -159,24 +158,11 @@
 
        var refresh = function() {
          $('#exchanges_datas').html('');
-         $('#postfix_calculator').html('to ' + target_currency);
-         //refresh_currency(0);
 
          var fromlist = name_list_of_currencies(target_currency);
          exchg_yahoo_bulk(fromlist, target_currency, function(datas) {
            rates = datas;
            make_ui(datas);
-           /*
-              var keys = Object.keys(datas);
-              for (var i=0; i < keys.length; i++) {
-              var key = keys[i];
-              var r = datas[key];
-              var fromname = key.substring(0, 3);
-              var toname = key.substring(3, 6);
-              var ratedata = r.rate;
-              $('#exchanges_datas').append('<li>1 ' + fromname + ' = ' + target_currency + ' ' + point_round_2(ratedata) + ' (' + ratedata + ')</li>');
-              }
-            */
            save_cache();
            $('#currency_input').focus();
          });
