@@ -1,3 +1,8 @@
+/**
+ * cookie.js
+ * Authorized by Seorenn <hirenn@gmail.com>
+ */
+
 var set_cookie = function(name, value, timeout) {
   var dt = new Date();
   dt.setTime(dt.getTime() + (timeout * 1000));

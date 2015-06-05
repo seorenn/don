@@ -1,3 +1,7 @@
+/**
+ * Authorized by Seorenn <hirenn@gmail.com>
+ */
+
 var config_currencies = [
   { name: 'KRW', desc: '대한민국 원화(Korean Won)', unit: '원', unitprice: 1000 },
   { name: 'USD', desc: '미국 달러화(U.S. Dollar)', unit: '달러', unitprice: 1 },
